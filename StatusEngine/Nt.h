@@ -36,10 +36,21 @@ extern "C" {
 	typedef int32_t NTSTATUS;
 	#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
 
-	__declspec(dllimport) void __stdcall RtlInitializeCriticalSection(RTL_CRITICAL_SECTION*);
-	__declspec(dllimport) void __stdcall RtlEnterCriticalSection(RTL_CRITICAL_SECTION*);
-	__declspec(dllimport) void __stdcall RtlLeaveCriticalSection(RTL_CRITICAL_SECTION*);
-	__declspec(dllimport) void __stdcall RtlDeleteCriticalSection(RTL_CRITICAL_SECTION*);
+	__declspec(dllimport) void __stdcall RtlInitializeCriticalSection(
+		RTL_CRITICAL_SECTION*
+	);
+
+	__declspec(dllimport) void __stdcall RtlEnterCriticalSection(
+		RTL_CRITICAL_SECTION*
+	);
+
+	__declspec(dllimport) void __stdcall RtlLeaveCriticalSection(
+		RTL_CRITICAL_SECTION*
+	);
+
+	__declspec(dllimport) void __stdcall RtlDeleteCriticalSection(
+		RTL_CRITICAL_SECTION*
+	);
 
 	__declspec(dllimport) NTSTATUS __stdcall NtOpenProcess(
 		void** ProcessHandle,
@@ -60,5 +71,9 @@ extern "C" {
 		void* ProcessInformation,
 		uint32_t ProcessInformationLength,
 		uint32_t* ReturnLength
+	);
+
+	__declspec(dllimport) NTSTATUS __stdcall NtClose(
+		void* Handle
 	);
 }

@@ -146,7 +146,7 @@
     <ClCompile Include="StatusEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StatusEngine.h" />
+    <ClInclude Include="Nt.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,6 +1,7 @@
 #include <iostream>
+#include <vector>
 #include <cstdint>
-#include "StatusEngine.h"
+#include "Nt.h"
 
 class CriticalSection {
 private:
@@ -24,13 +25,24 @@ public:
 	}
 };
 
-class StatusEvent {
+class Event {
 private:
+	int eventType;
+public:
+	Event(int eventType) {
+		this->eventType = eventType;
+	}
+};
+
+class StatusEvent : public Event {
+private:
+	static const int statusEventType = 0;
+
 	int returnCode;
 	uint32_t processId;
 
 public:
-	StatusEvent(int code, uint32_t pid) {
+	StatusEvent(int code, uint32_t pid): Event(statusEventType) {
 		returnCode = code;
 		processId = pid;
 	}
@@ -55,28 +67,33 @@ public:
 class StatusEngine {
 private:
 	CriticalSection lockManager;
-	Printer* targetPrinter;
+	std::vector<Printer*> printers;
+
+	static const uint32_t PROCESS_QUERY_INFORMATION = 0x0400;
+	static const uint32_t SYNCHRONIZE = 0x00100000L;
 
 public:
-	StatusEngine() {
-		targetPrinter = nullptr;
-	}
+	StatusEngine() {}
 
 	void registerPrinter(Printer* printer) {
 		lockManager.enter();
-		targetPrinter = printer;
-		lockManager.leave();
-	}
-
-	void trigger(StatusEvent eventData) {
-		lockManager.enter();
-		if (targetPrinter != nullptr) {
-			targetPrinter->print(eventData);
+		if (printer != nullptr) {
+			printers.push_back(printer);
 		}
 		lockManager.leave();
 	}
 
-	void monitorAndExit(uint32_t pid) {
+	void trigger(const StatusEvent& eventData) {
+		lockManager.enter();
+		for (size_t i = 0; i < printers.size(); i++) {
+			if (printers[i] != nullptr) {
+				printers[i]->print(eventData);
+			}
+		}
+		lockManager.leave();
+	}
+
+	void monitorProcess(uint32_t pid) {
 		OBJECT_ATTRIBUTES objAttr = { sizeof(OBJECT_ATTRIBUTES), 0, 0, 0, 0, 0 };
 		CLIENT_ID clientId = { 
 			(void*)(uintptr_t)pid,
@@ -84,7 +101,7 @@ public:
 		};
 
 		void* processHandle = 0;
-		NTSTATUS status = NtOpenProcess(&processHandle, 0x00100000L | 0x0400, &objAttr, &clientId);
+		NTSTATUS status = NtOpenProcess(&processHandle, SYNCHRONIZE | PROCESS_QUERY_INFORMATION, &objAttr, &clientId);
 		if (status != STATUS_SUCCESS || !processHandle) {
 			return;
 		}
@@ -100,6 +117,8 @@ public:
 			exitCode = (int)(uintptr_t)pbi.ExitStatus;
 		}
 
+		NtClose(processHandle);
+
 		trigger(StatusEvent(exitCode, pid));
 	}
 };
@@ -114,7 +133,7 @@ int main() {
 	std::cout << "Enter PID: ";
 	std::cin >> pid;
 
-	engine.monitorAndExit(pid);
+	engine.monitorProcess(pid);
 
 	return 0;
 }
