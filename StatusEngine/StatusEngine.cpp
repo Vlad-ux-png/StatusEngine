@@ -42,9 +42,9 @@ private:
 	uint32_t processId;
 
 public:
-	StatusEvent(int code, uint32_t pid): Event(statusEventType) {
-		returnCode = code;
-		processId = pid;
+	StatusEvent(int returnCode, uint32_t processId): Event(statusEventType) {
+		this->returnCode = returnCode;
+		this->processId = processId;
 	}
 
 	int getCode() {
@@ -93,16 +93,17 @@ public:
 		lockManager.leave();
 	}
 
-	void monitorProcess(uint32_t pid) {
+	void monitorProcess(uint32_t processId) {
 		OBJECT_ATTRIBUTES objAttr = { sizeof(OBJECT_ATTRIBUTES), 0, 0, 0, 0, 0 };
 		CLIENT_ID clientId = { 
-			(void*)(uintptr_t)pid,
+			(void*)(uintptr_t)processId,
 			0 
 		};
 
 		void* processHandle = 0;
 		NTSTATUS status = NtOpenProcess(&processHandle, SYNCHRONIZE | PROCESS_QUERY_INFORMATION, &objAttr, &clientId);
 		if (status != STATUS_SUCCESS || !processHandle) {
+			std::cout << "Failed to open the process with PID " << processId;
 			return;
 		}
 
@@ -119,7 +120,7 @@ public:
 
 		NtClose(processHandle);
 
-		trigger(StatusEvent(exitCode, pid));
+		trigger(StatusEvent(exitCode, processId));
 	}
 };
 
