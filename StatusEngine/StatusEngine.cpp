@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cstdint>
-#include "CriticalSection.h"
 #include "Event.h"
 #include "StatusEngine.h"
 
