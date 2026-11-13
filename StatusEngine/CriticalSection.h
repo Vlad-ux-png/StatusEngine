@@ -4,15 +4,10 @@
 class CriticalSection {
 private:
 	std::mutex mutex;
-
 public:
-	CriticalSection() {}
+	CriticalSection();
 
-	void enter() {
-		mutex.lock();
-	}
+	void enter();
 
-	void leave() {
-		mutex.unlock();
-	}
+	void leave();
 };

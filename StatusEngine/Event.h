@@ -1,12 +1,11 @@
 #pragma once
+#include <cstdint>
 
 class Event {
 private:
 	int eventType;
 public:
-	Event(int eventType) {
-		this->eventType = eventType;
-	}
+	Event(int eventType);
 };
 
 class StatusEvent : public Event {
@@ -17,16 +16,9 @@ private:
 	uint32_t processId;
 
 public:
-	StatusEvent(int returnCode, uint32_t processId) : Event(statusEventType) {
-		this->returnCode = returnCode;
-		this->processId = processId;
-	}
+	StatusEvent(int returnCode, uint32_t processId);
 
-	int getCode() {
-		return returnCode;
-	}
+	int getCode();
 
-	uint32_t getProcessId() {
-		return processId;
-	}
+	uint32_t getProcessId();
 };

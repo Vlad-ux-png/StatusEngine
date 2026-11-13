@@ -1,21 +1,72 @@
 #include <iostream>
+#include <vector>
 #include <cstdint>
-#include "Event.h"
+#include <windows.h>
+#include "CriticalSection.h"
 #include "StatusEngine.h"
+#include "Event.h"
 
-int main() {
-	StatusEngine engine;
-	Printer printer;
+void Printer::print(StatusEvent eventData) {
+	std::cout << "Process " << eventData.getProcessId() << " Exited with code: "
+		<< eventData.getCode() << std::endl;
+}
 
-	engine.registerPrinter(&printer);
+StatusEngine::StatusEngine() {}
 
-	uint32_t pid = 0;
-	std::cout << "Enter PID: ";
-	std::cin >> pid;
+void StatusEngine::registerPrinter(Printer* printer) {
+	lockManager.enter();
+	try {
+		if (printer != nullptr) {
+			printers.push_back(printer);
+		}
+	}
+	catch (...) {
+		lockManager.leave();
+		throw;
+	}
+	lockManager.leave();
+}
 
-	engine.monitorProcess(pid);
+void StatusEngine::unregisterPrinter(Printer* printer) {
+	lockManager.enter();
+	try {
+		for (size_t i = 0; i < printers.size(); i++) {
+			if (printers[i] == printer) {
+				printers.erase(printers.begin() + i);
+				break;
+			}
+		}
+	}
+	catch (...) {
+		lockManager.leave();
+		throw;
+	}
+	lockManager.leave();
+}
 
-	engine.unregisterPrinter(&printer);
+void StatusEngine::trigger(const StatusEvent& eventData) {
+	lockManager.enter();
+	for (size_t i = 0; i < printers.size(); i++) {
+		if (printers[i] != nullptr) {
+			printers[i]->print(eventData);
+		}
+	}
+	lockManager.leave();
+}
 
-	return 0;
+void StatusEngine::monitorProcess(uint32_t processId) {
+	HANDLE processHandle = OpenProcess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION, FALSE, processId);
+	if (processHandle == nullptr) {
+		std::cout << "Failed to open the process with PID " << processId << std::endl;
+		return;
+	}
+
+	WaitForSingleObject(processHandle, INFINITE);
+
+	DWORD exitCode = 0;
+	GetExitCodeProcess(processHandle, &exitCode);
+
+	CloseHandle(processHandle);
+
+	trigger(StatusEvent(exitCode, processId));
 }
