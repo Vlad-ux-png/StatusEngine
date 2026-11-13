@@ -20,7 +20,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Nt.h">
+    <ClInclude Include="CriticalSection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Event.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatusEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

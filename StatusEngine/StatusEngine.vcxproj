@@ -146,7 +146,9 @@
     <ClCompile Include="StatusEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Nt.h" />
+    <ClInclude Include="CriticalSection.h" />
+    <ClInclude Include="Event.h" />
+    <ClInclude Include="StatusEngine.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
